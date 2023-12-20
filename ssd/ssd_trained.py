@@ -27,7 +27,7 @@ class ObjectDetectionModel:
             untar=True)
         model_path = model_base_path + "/saved_model"
         labels_path = tf.keras.utils.get_file(
-            fname='mscoco_label_map.pbtxt',
+            fname=labels_name,
             origin='https://raw.githubusercontent.com/tensorflow/models/master/research/object_detection/data/{}.pbtxt'.format(
                 labels_name),
             untar=False)
