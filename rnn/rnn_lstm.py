@@ -64,6 +64,7 @@ testX, testY = get_XY(test_data, time_steps)
 # create real RNN model with tanh
 model = create_RNN(hidden_units=3, dense_units=1, input_shape=(time_steps, 1),
                    activation=['tanh', 'tanh'])
+model.summary()
 model.fit(trainX, trainY, epochs=100, batch_size=10, verbose=2)
 
 

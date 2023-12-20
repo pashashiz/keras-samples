@@ -5,6 +5,7 @@ from keras.layers import Conv2D
 from keras.layers import MaxPool2D
 from keras.layers import Activation
 from keras.layers import Flatten
+from keras.layers import BatchNormalization
 import time
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
@@ -22,6 +23,7 @@ model = Sequential()
 model.add(Conv2D(32, (3, 3), input_shape=(28, 28, 1)))
 model.add(MaxPool2D(pool_size=(2, 2)))
 model.add(Conv2D(64, (3, 3)))
+model.add(BatchNormalization())
 model.add(MaxPool2D(pool_size=(2, 2)))
 model.add(Activation('relu'))
 model.add(Flatten())
@@ -41,7 +43,7 @@ start = time.time()
 model.fit(
     x_train,
     y_train,
-    epochs=5,
+    epochs=10,
     batch_size=1000,
     verbose=1,
     validation_split=0.3
