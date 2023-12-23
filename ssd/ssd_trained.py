@@ -1,4 +1,6 @@
 import time
+from typing import List
+
 import numpy as np
 import tensorflow as tf
 from PIL import Image
@@ -13,6 +15,13 @@ class DetectedObject:
 
     def __str__(self) -> str:
         return "DetectedObject(label={},score={},bbox={})".format(self.label, self.score, self.bbox)
+
+    def to_dict(self):
+        return {
+            'label': self.label,
+            'score': self.score,
+            'bbox': self.bbox
+        }
 
 
 class ObjectDetectionModel:
@@ -38,7 +47,7 @@ class ObjectDetectionModel:
         load_time = load_end_time - load_start_time
         print('Loaded model in {} seconds'.format(load_time))
 
-    def predict(self, image_np, threshold=0.5):
+    def predict(self, image_np, threshold=0.5) -> list[DetectedObject]:
         input_tensor = tf.convert_to_tensor(image_np)
         # a weird way to reshape as [1, height, width, channels] to get batch dimention
         input_tensor = input_tensor[tf.newaxis, ...]
@@ -53,26 +62,27 @@ class ObjectDetectionModel:
         detection_scores = detections['detection_scores'].numpy()[0]
         detection_boxes = detections['detection_boxes'].numpy()[0]
 
-        detected = []
+        detected: list[DetectedObject] = []
         for index in range(num_detections):
-            score = detection_scores[index]
+            score = float(detection_scores[index])
             class_num = detection_classes[index]
-            bbox = detection_boxes[index]
+            bbox = detection_boxes[index].tolist()
             if score >= threshold:
                 detected.append(DetectedObject(label=self.labels[class_num], score=score, bbox=bbox))
 
         return detected
 
 
-model = ObjectDetectionModel('ssd_resnet101_v1_fpn_640x640_coco17_tpu-8', 'mscoco_label_map')
-img = np.array(Image.open('data/IMG_2573.jpg'))
+if __name__ == "__main__":
+    model = ObjectDetectionModel('ssd_resnet101_v1_fpn_640x640_coco17_tpu-8', 'mscoco_label_map')
+    img = np.array(Image.open('data/IMG_2573.jpg'))
 
-detected = model.predict(img, threshold=0.5)
-detected2 = model.predict(img, threshold=0.5)
-detected3 = model.predict(img, threshold=0.5)
-# Predicted in 3.989988088607788 seconds
-# Predicted in 0.698915958404541 seconds
-# Predicted in 0.631324052810669 seconds
+    detected = model.predict(img, threshold=0.5)
+    detected2 = model.predict(img, threshold=0.5)
+    detected3 = model.predict(img, threshold=0.5)
+    # Predicted in 3.989988088607788 seconds
+    # Predicted in 0.698915958404541 seconds
+    # Predicted in 0.631324052810669 seconds
 
-for obj in detected:
-    print(obj)
+    for obj in detected:
+        print(obj)
