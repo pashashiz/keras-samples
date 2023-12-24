@@ -11,15 +11,21 @@ app = Flask(__name__)
 model = None
 
 
-@app.route("/", methods=['POST'])
+@app.route("/image/detect", methods=['POST'])
 def detect_image():
-    file = request.files['file']
-    data = file.read()
-    print(type(Image))
-    image = Image.open(io.BytesIO(data))
-    tensor = np.array(image)
-    detected_objects = model.predict(tensor, threshold=0.5)
-    return jsonify([detected_object.to_dict() for detected_object in detected_objects])
+    if request.content_type in ('application/octet-stream', 'image/jpeg', 'image/png'):
+        data = request.get_data()
+        try:
+            image = Image.open(io.BytesIO(data))
+            print(type(image))
+            tensor = np.array(image.convert('RGB'))
+        except Exception as e:
+            return error(400, 'Invalid input file {}'.format(e))
+        print('Processing a {} image with shape {}...'.format(image.format, tensor.shape))
+        detected_objects = model.predict(tensor, threshold=0.5)
+        return jsonify([detected_object.to_dict() for detected_object in detected_objects])
+    else:
+        return error(415, 'Expected Content-Type one of [application/octet-stream, image/jpeg, image/png]')
 
 
 def error(code, message):
